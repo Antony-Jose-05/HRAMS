@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:animations/animations.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../models/room.dart';
+import '../providers/room_provider.dart';
+import '../providers/booking_provider.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/room_card.dart';
@@ -18,15 +21,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   DateTime? _checkIn;
   DateTime? _checkOut;
 
-  final List<Room> _rooms = Room.mockRooms;
-
-  int get _totalRooms => _rooms.length;
-  int get _availableRooms =>
-      _rooms.where((r) => r.status == RoomStatus.available).length;
-  int get _occupiedRooms =>
-      _rooms.where((r) => r.status == RoomStatus.occupied).length;
-  int get _bookingsToday =>
-      _rooms.where((r) => r.status != RoomStatus.available).length;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RoomProvider>().fetchAllRooms();
+      context.read<BookingProvider>().fetchAllBookings();
+    });
+  }
 
   Future<void> _pickDate(BuildContext context, bool isCheckIn) async {
     final now = DateTime.now();
@@ -94,42 +96,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
 
-    return Padding(
-        // TIP: Adjust the '80' below to change the gap between the scrolling area and the nav bar
-        padding: const EdgeInsets.only(bottom: 83),
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // --- APP BAR ---
-              _buildAppBar(),
-              const SizedBox(height: 24),
+    return Consumer2<RoomProvider, BookingProvider>(
+      builder: (context, roomProvider, bookingProvider, _) {
+        final rooms = roomProvider.rooms;
+        final totalRooms = rooms.length;
+        final availableRooms = rooms.where((r) => r.status == RoomStatus.available).length;
+        final occupiedRooms = rooms.where((r) => r.status == RoomStatus.occupied).length;
+        final bookingsToday = bookingProvider.todayBookings;
 
-              // --- WELCOME CARD ---
-              _buildWelcomeCard(),
-              const SizedBox(height: 24),
+        return Padding(
+          // TIP: Adjust the '80' below to change the gap between the scrolling area and the nav bar
+          padding: const EdgeInsets.only(bottom: 83),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // --- APP BAR ---
+                _buildAppBar(),
+                const SizedBox(height: 24),
 
-              // --- STATISTICS GRID ---
-              _buildSectionTitle('Overview'),
-              const SizedBox(height: 12),
-              _buildStatsGrid(),
-              const SizedBox(height: 28),
+                // --- WELCOME CARD ---
+                _buildWelcomeCard(),
+                const SizedBox(height: 24),
 
-              // --- DATE SEARCH ---
-              _buildSectionTitle('Check Availability'),
-              const SizedBox(height: 12),
-              _buildDateSearch(),
-              const SizedBox(height: 28),
+                // --- STATISTICS GRID ---
+                _buildSectionTitle('Overview'),
+                const SizedBox(height: 12),
+                _buildStatsGrid(totalRooms, availableRooms, occupiedRooms, bookingsToday),
+                const SizedBox(height: 28),
 
-              // --- ROOM GRID ---
-              _buildSectionTitle('Nearby Rental House\'s'),
-              const SizedBox(height: 12),
-              _buildRoomGrid(),
-            ],
+                // --- DATE SEARCH ---
+                _buildSectionTitle('Check Availability'),
+                const SizedBox(height: 12),
+                _buildDateSearch(),
+                const SizedBox(height: 28),
+
+                // --- ROOM GRID ---
+                _buildSectionTitle('Rooms'),
+                const SizedBox(height: 12),
+                _buildRoomGrid(rooms),
+              ],
+            ),
           ),
-        ));
+        );
+      },
+    );
   }
 
   // --- APP BAR ---
@@ -333,7 +346,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   // --- STATISTICS GRID ---
-  Widget _buildStatsGrid() {
+  Widget _buildStatsGrid(int totalRooms, int availableRooms, int occupiedRooms, int bookingsToday) {
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -345,28 +358,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
         StatCard(
           icon: Icons.meeting_room_outlined,
           label: 'Total Rooms',
-          value: '$_totalRooms',
+          value: '$totalRooms',
           iconColor: const Color(0xFF3B5DF5),
           iconBgColor: const Color(0xFF3B5DF5).withValues(alpha: 0.15),
         ),
         StatCard(
           icon: Icons.check_circle_outline,
           label: 'Available',
-          value: '$_availableRooms',
+          value: '$availableRooms',
           iconColor: const Color(0xFF22C55E),
           iconBgColor: const Color(0xFF22C55E).withValues(alpha: 0.15),
         ),
         StatCard(
           icon: Icons.do_not_disturb_on_outlined,
           label: 'Occupied',
-          value: '$_occupiedRooms',
+          value: '$occupiedRooms',
           iconColor: const Color(0xFFEF4444),
           iconBgColor: const Color(0xFFEF4444).withValues(alpha: 0.15),
         ),
         StatCard(
           icon: Icons.calendar_today_outlined,
           label: 'Bookings Today',
-          value: '$_bookingsToday',
+          value: '$bookingsToday',
           iconColor: const Color(0xFFFBBF24),
           iconBgColor: const Color(0xFFFBBF24).withValues(alpha: 0.15),
         ),
@@ -512,8 +525,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   // --- ROOM GRID ---
-  Widget _buildRoomGrid() {
-    final displayRooms = _rooms.take(6).toList();
+  Widget _buildRoomGrid(List<Room> rooms) {
+    final displayRooms = rooms.take(6).toList();
+    if (displayRooms.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Text('No rooms available', style: TextStyle(color: Color(0xFF475569))),
+        ),
+      );
+    }
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),

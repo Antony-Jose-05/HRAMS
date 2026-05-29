@@ -136,6 +136,7 @@ class ApiClient {
         throw ApiException('Request failed with status: ${response.statusCode}');
       }
     } catch (e) {
+      if (e is UnauthorizedException || e is ApiException) rethrow;
       throw ApiException('Failed to delete $endpoint: $e');
     }
   }

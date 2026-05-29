@@ -255,7 +255,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Username: admin\nPassword: password123',
+                      'Username: admin\nPassword: admin123',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white70,

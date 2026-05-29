@@ -196,7 +196,7 @@ public class BookingService
                 Type = booking.Room.Type,
                 Price = booking.Room.Price,
                 Floor = booking.Room.Floor,
-                Status = "Available"
+                Status = booking.Room.Status
             }
         };
     }

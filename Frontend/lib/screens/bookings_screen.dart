@@ -1,108 +1,106 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import '../models/booking.dart';
+import '../providers/booking_provider.dart';
 import '../widgets/glass_card.dart';
 
-class BookingsScreen extends StatelessWidget {
+class BookingsScreen extends StatefulWidget {
   const BookingsScreen({super.key});
+
+  @override
+  State<BookingsScreen> createState() => _BookingsScreenState();
+}
+
+class _BookingsScreenState extends State<BookingsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<BookingProvider>().fetchAllBookings();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 69),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Bookings',
-            style: TextStyle(
-              color: Color(0xFF0F172A),
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-            ),
+    return Consumer<BookingProvider>(
+      builder: (context, bookingProvider, _) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 69),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Bookings',
+                style: TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${bookingProvider.bookings.length} total bookings',
+                style: const TextStyle(
+                  color: Color(0xFF475569),
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: bookingProvider.isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : bookingProvider.error != null
+                        ? Center(
+                            child: Text(
+                              bookingProvider.error!,
+                              style: const TextStyle(color: Color(0xFF475569)),
+                            ),
+                          )
+                        : bookingProvider.bookings.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  'No bookings found',
+                                  style: TextStyle(color: Color(0xFF475569)),
+                                ),
+                              )
+                            : ListView.separated(
+                                physics: const BouncingScrollPhysics(),
+                                itemCount: bookingProvider.bookings.length,
+                                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                                itemBuilder: (context, index) {
+                                  return _buildBookingCard(bookingProvider.bookings[index]);
+                                },
+                              ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          const Text(
-            'Today\'s guest bookings',
-            style: TextStyle(
-              color: Color(0xFF475569),
-              fontSize: 13,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: ListView(
-              physics: const BouncingScrollPhysics(),
-              children: [
-                _buildBookingCard(
-                  guestName: 'Sarah Johnson',
-                  roomNumber: '102',
-                  checkIn: 'May 27, 2026',
-                  checkOut: 'May 30, 2026',
-                  status: 'Checked In',
-                  statusColor: const Color(0xFF22C55E),
-                ),
-                const SizedBox(height: 12),
-                _buildBookingCard(
-                  guestName: 'Michael Chen',
-                  roomNumber: '201',
-                  checkIn: 'May 28, 2026',
-                  checkOut: 'Jun 01, 2026',
-                  status: 'Reserved',
-                  statusColor: const Color(0xFFFBBF24),
-                ),
-                const SizedBox(height: 12),
-                _buildBookingCard(
-                  guestName: 'Emily Davis',
-                  roomNumber: '301',
-                  checkIn: 'May 26, 2026',
-                  checkOut: 'May 29, 2026',
-                  status: 'Checked In',
-                  statusColor: const Color(0xFF22C55E),
-                ),
-                const SizedBox(height: 12),
-                _buildBookingCard(
-                  guestName: 'Robert Wilson',
-                  roomNumber: '206',
-                  checkIn: 'May 27, 2026',
-                  checkOut: 'May 28, 2026',
-                  status: 'Checked In',
-                  statusColor: const Color(0xFF22C55E),
-                ),
-                const SizedBox(height: 12),
-                _buildBookingCard(
-                  guestName: 'Priya Sharma',
-                  roomNumber: '309',
-                  checkIn: 'May 29, 2026',
-                  checkOut: 'Jun 02, 2026',
-                  status: 'Reserved',
-                  statusColor: const Color(0xFFFBBF24),
-                ),
-                const SizedBox(height: 12),
-                _buildBookingCard(
-                  guestName: 'James Anderson',
-                  roomNumber: '403',
-                  checkIn: 'May 25, 2026',
-                  checkOut: 'May 27, 2026',
-                  status: 'Checking Out',
-                  statusColor: const Color(0xFFEF4444),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildBookingCard({
-    required String guestName,
-    required String roomNumber,
-    required String checkIn,
-    required String checkOut,
-    required String status,
-    required Color statusColor,
-  }) {
+  Widget _buildBookingCard(Booking booking) {
+    Color statusColor;
+    switch (booking.status) {
+      case 'CheckedIn':
+        statusColor = const Color(0xFF22C55E);
+        break;
+      case 'CheckedOut':
+        statusColor = const Color(0xFFEF4444);
+        break;
+      case 'Reserved':
+      default:
+        statusColor = const Color(0xFFFBBF24);
+    }
+
+    final dateFormat = DateFormat('MMM dd, yyyy');
+    final roomLabel = booking.room != null
+        ? 'Room ${booking.room!.number}'
+        : 'Room ${booking.roomId}';
+
     return GlassCard(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -125,7 +123,7 @@ class BookingsScreen extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    guestName[0],
+                    booking.guestName.isNotEmpty ? booking.guestName[0] : '?',
                     style: TextStyle(
                       color: statusColor,
                       fontSize: 18,
@@ -140,7 +138,7 @@ class BookingsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      guestName,
+                      booking.guestName,
                       style: const TextStyle(
                         color: Color(0xFF0F172A),
                         fontSize: 15,
@@ -149,7 +147,7 @@ class BookingsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Room $roomNumber',
+                      roomLabel,
                       style: const TextStyle(
                         color: Color(0xFF475569),
                         fontSize: 12,
@@ -160,14 +158,13 @@ class BookingsScreen extends StatelessWidget {
               ),
               // Status badge
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  status,
+                  booking.statusName,
                   style: TextStyle(
                     color: statusColor,
                     fontSize: 11,
@@ -194,7 +191,7 @@ class BookingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '$checkIn  →  $checkOut',
+                  '${dateFormat.format(booking.checkInDate)}  →  ${dateFormat.format(booking.checkOutDate)}',
                   style: const TextStyle(
                     color: Color(0xFF475569),
                     fontSize: 12,

@@ -1,5 +1,6 @@
 using HotelBackend.Data;
 using HotelBackend.Helpers;
+using HotelBackend.Models;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -60,12 +61,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFlutterApp", corsPolicyBuilder =>
     {
-        // Allow requests from these URLs (add your device IP if testing on physical device)
         corsPolicyBuilder
-            .WithOrigins("http://localhost:5000", "http://localhost:8080", "http://localhost:3000")
-            .AllowAnyMethod() // Allow GET, POST, PUT, DELETE, etc.
-            .AllowAnyHeader() // Allow any headers from client
-            .AllowCredentials(); // Allow cookies/authentication headers
+            .AllowAnyOrigin()  // Allow any origin (Flutter web uses a varying port)
+            .AllowAnyMethod()  // Allow GET, POST, PUT, DELETE, etc.
+            .AllowAnyHeader(); // Allow any headers from client
     });
 });
 
@@ -97,9 +96,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Force HTTPS in production
-app.UseHttpsRedirection();
-
 // Enable CORS - must come before authentication
 app.UseCors("AllowFlutterApp");
 
@@ -125,9 +121,9 @@ using (var scope = app.Services.CreateScope())
     {
         // Add sample admin accounts
         context.Admins.AddRange(
-            new Admin { Username = "admin", Password = "admin123" },
-            new Admin { Username = "demo", Password = "demo123" },
-            new Admin { Username = "manager", Password = "pass123" }
+            new Admin { Username = "admin", PasswordHash = "admin123" },
+            new Admin { Username = "demo", PasswordHash = "demo123" },
+            new Admin { Username = "manager", PasswordHash = "pass123" }
         );
 
         // Add sample rooms

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/glass_card.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -148,7 +150,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             height: 52,
             child: OutlinedButton.icon(
               onPressed: () {
-                Navigator.of(context).popUntil((route) => route.isFirst);
+                context.read<AuthProvider>().logout();
               },
               style: OutlinedButton.styleFrom(
                 side: BorderSide(

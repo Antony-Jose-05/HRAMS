@@ -13,9 +13,11 @@ class RoomProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
+  bool _filterActive = false;
+
   RoomProvider(this._roomService);
 
-  List<Room> get rooms => _filteredRooms.isEmpty ? _rooms : _filteredRooms;
+  List<Room> get rooms => _filterActive ? _filteredRooms : _rooms;
   bool get isLoading => _isLoading;
   String? get error => _error;
   RoomStatus? get filterStatus => _filterStatus;
@@ -31,6 +33,8 @@ class RoomProvider extends ChangeNotifier {
       if (success) {
         _rooms = rooms;
         _filteredRooms = rooms;
+        _filterActive = false;
+        _filterStatus = null;
         _error = null;
       } else {
         _error = message;
@@ -74,6 +78,7 @@ class RoomProvider extends ChangeNotifier {
 
   void filterByStatus(RoomStatus? status) {
     _filterStatus = status;
+    _filterActive = status != null;
     
     if (status == null) {
       _filteredRooms = _rooms;

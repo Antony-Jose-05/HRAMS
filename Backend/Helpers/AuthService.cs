@@ -32,7 +32,7 @@ public class AuthService
         var admin = _context.Admins.FirstOrDefault(a => a.Username == request.Username);
 
         // Check if admin exists AND password matches
-        if (admin == null || admin.Password != request.Password)
+        if (admin == null || admin.PasswordHash != request.Password)
         {
             return Task.FromResult(new LoginResponseDTO
             {
@@ -72,7 +72,7 @@ public class AuthService
         var admin = new Admin
         {
             Username = request.Username,
-            Password = request.Password
+            PasswordHash = request.Password
         };
 
         // Save to database

@@ -136,7 +136,7 @@ public class RoomService
             Type = room.Type,
             Price = room.Price,
             Floor = room.Floor,
-            Status = "Available" // In a real app, you'd calculate this from bookings
+            Status = room.Status
         };
     }
 }

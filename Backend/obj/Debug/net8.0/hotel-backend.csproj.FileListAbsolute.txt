@@ -226,3 +226,4 @@
 /Users/antonyjose/Desktop/Projects/Internship/HMS/Backend/obj/Debug/net8.0/hotel-backend.pdb
 /Users/antonyjose/Desktop/Projects/Internship/HMS/Backend/obj/Debug/net8.0/hotel-backend.genruntimeconfig.cache
 /Users/antonyjose/Desktop/Projects/Internship/HMS/Backend/obj/Debug/net8.0/ref/hotel-backend.dll
+/Users/antonyjose/Desktop/Projects/Internship/HMS/Backend/obj/Debug/net8.0/hotel-backend.sourcelink.json

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
+import 'package:provider/provider.dart';
 import '../models/room.dart';
+import '../providers/room_provider.dart';
 import '../widgets/room_card.dart';
 
 class RoomsScreen extends StatefulWidget {
@@ -12,80 +14,106 @@ class RoomsScreen extends StatefulWidget {
 
 class _RoomsScreenState extends State<RoomsScreen> {
   RoomStatus? _selectedFilter;
-  final List<Room> _allRooms = Room.mockRooms;
 
-  List<Room> get _filteredRooms {
-    if (_selectedFilter == null) return _allRooms;
-    return _allRooms.where((r) => r.status == _selectedFilter).toList();
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RoomProvider>().fetchAllRooms();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
 
-    return Padding(
-      // TIP: Adjust the '100' below to change the gap between the bottom of the list and the nav bar
-      padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 69),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Title
-          const Text(
-            'All Rooms',
-            style: TextStyle(
-              color: Color(0xFF0F172A),
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${_filteredRooms.length} rooms found',
-            style: const TextStyle(
-              color: Color(0xFF475569),
-              fontSize: 13,
-            ),
-          ),
-          const SizedBox(height: 16),
+    return Consumer<RoomProvider>(
+      builder: (context, roomProvider, _) {
+        final filteredRooms = _selectedFilter == null
+            ? roomProvider.rooms
+            : roomProvider.rooms.where((r) => r.status == _selectedFilter).toList();
 
-          // Filter chips
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildFilterChip('All', null),
-                const SizedBox(width: 8),
-                _buildFilterChip('Available', RoomStatus.available),
-                const SizedBox(width: 8),
-                _buildFilterChip('Occupied', RoomStatus.occupied),
-                const SizedBox(width: 8),
-                _buildFilterChip('Reserved', RoomStatus.reserved),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Room grid
-          Expanded(
-            child: GridView.builder(
-              physics: const BouncingScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 0.92,
+        return Padding(
+          // TIP: Adjust the '100' below to change the gap between the bottom of the list and the nav bar
+          padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 69),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title
+              const Text(
+                'All Rooms',
+                style: TextStyle(
+                  color: Color(0xFF0F172A),
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              itemCount: _filteredRooms.length,
-              itemBuilder: (context, index) {
-                return RoomCard(
-                  room: _filteredRooms[index],
-                  onTap: () => _showRoomSheet(_filteredRooms[index]),
-                );
-              },
-            ),
+              const SizedBox(height: 4),
+              Text(
+                '${filteredRooms.length} rooms found',
+                style: const TextStyle(
+                  color: Color(0xFF475569),
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Filter chips
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildFilterChip('All', null),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Available', RoomStatus.available),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Occupied', RoomStatus.occupied),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Reserved', RoomStatus.reserved),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Room grid
+              Expanded(
+                child: roomProvider.isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : roomProvider.error != null
+                        ? Center(
+                            child: Text(
+                              roomProvider.error!,
+                              style: const TextStyle(color: Color(0xFF475569)),
+                            ),
+                          )
+                        : filteredRooms.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  'No rooms found',
+                                  style: TextStyle(color: Color(0xFF475569)),
+                                ),
+                              )
+                            : GridView.builder(
+                                physics: const BouncingScrollPhysics(),
+                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  mainAxisSpacing: 12,
+                                  crossAxisSpacing: 12,
+                                  childAspectRatio: 0.92,
+                                ),
+                                itemCount: filteredRooms.length,
+                                itemBuilder: (context, index) {
+                                  return RoomCard(
+                                    room: filteredRooms[index],
+                                    onTap: () => _showRoomSheet(filteredRooms[index]),
+                                  );
+                                },
+                              ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
