@@ -22,7 +22,13 @@ class AuthProvider extends ChangeNotifier {
   String? get error => _error;
 
   Future<void> _checkAuthentication() async {
-    _isAuthenticated = await _authService.isAuthenticated();
+    final token = await _authService.getToken();
+    if (token != null && token.isNotEmpty) {
+      _isAuthenticated = true;
+      _admin = await _authService.getSavedAdmin(); // restore admin data
+    } else {
+      _isAuthenticated = false;
+    }
     notifyListeners();
   }
 

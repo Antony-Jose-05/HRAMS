@@ -1,3 +1,4 @@
+import 'dart:convert';
 import '../models/admin.dart';
 import 'api_client.dart';
 
@@ -28,6 +29,8 @@ class AuthService {
         final message = (response['message'] as String?) ?? 'Login successful';
         
         await _apiClient.setToken(token);
+        // Also persist admin data
+        await _apiClient.setAdminData(jsonEncode(adminData));
         
         final admin = AdminModel.fromJson(adminData);
         return (true, message, admin, token);
@@ -43,9 +46,20 @@ class AuthService {
   Future<(bool success, String message)> logout() async {
     try {
       await _apiClient.clearToken();
+      await _apiClient.clearAdminData(); // clear admin too
       return (true, 'Logged out successfully');
     } catch (e) {
       return (false, 'Logout error: $e');
+    }
+  }
+
+  Future<AdminModel?> getSavedAdmin() async {
+    final adminJson = await _apiClient.getAdminData();
+    if (adminJson == null) return null;
+    try {
+      return AdminModel.fromJson(jsonDecode(adminJson) as Map<String, dynamic>);
+    } catch (_) {
+      return null;
     }
   }
 

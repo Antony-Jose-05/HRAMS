@@ -126,7 +126,13 @@ class _BookingFormSheetState extends State<BookingFormSheet> {
       _isLoading = true;
     });
 
-    final success = await context.read<BookingProvider>().createBooking(
+    // Capture context-dependent objects BEFORE the async gap
+    final bookingProvider = context.read<BookingProvider>();
+    final roomProvider = context.read<RoomProvider>();
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    final success = await bookingProvider.createBooking(
           widget.room.id,
           _nameController.text.trim(),
           _phoneController.text.trim(),
@@ -137,15 +143,10 @@ class _BookingFormSheetState extends State<BookingFormSheet> {
     if (!mounted) return;
 
     if (success) {
-      // Refresh rooms so the grid immediately reflects the "Reserved" status
-      context.read<RoomProvider>().fetchAllRooms();
-
-      final scaffoldMessenger = ScaffoldMessenger.of(context);
-      final navigator = Navigator.of(context);
+      roomProvider.fetchAllRooms();
+      navigator.pop();
       
-      navigator.pop(); // Close booking form sheet
-      
-      scaffoldMessenger.showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: const Text('Booking confirmed!'),
           backgroundColor: const Color(0xFF22C55E),
@@ -158,7 +159,7 @@ class _BookingFormSheetState extends State<BookingFormSheet> {
     } else {
       setState(() {
         _isLoading = false;
-        _errorMessage = context.read<BookingProvider>().error ?? 'An error occurred';
+        _errorMessage = bookingProvider.error ?? 'An error occurred';
       });
     }
   }

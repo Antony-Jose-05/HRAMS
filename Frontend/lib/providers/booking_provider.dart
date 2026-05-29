@@ -48,36 +48,26 @@ class BookingProvider extends ChangeNotifier {
   ) async {
     _isLoading = true;
     _error = null;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
-    });
+    notifyListeners();
 
     try {
       final (success, booking, message) = await _bookingService.createBooking(
-        roomId,
-        guestName,
-        phone,
-        checkInDate,
-        checkOutDate,
+        roomId, guestName, phone, checkInDate, checkOutDate,
       );
 
       if (success && booking != null) {
         _bookings.add(booking);
         _error = null;
-        _isLoading = false;
-        notifyListeners();
-        return true;
       } else {
         _error = message;
-        _isLoading = false;
-        notifyListeners();
-        return false;
       }
+      return success;
     } catch (e) {
       _error = 'Error creating booking: $e';
+      return false;
+    } finally {
       _isLoading = false;
       notifyListeners();
-      return false;
     }
   }
 

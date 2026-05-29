@@ -422,49 +422,81 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 16),
           // Search button
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      _checkIn != null && _checkOut != null
-                          ? 'Searching availability from ${dateFormat.format(_checkIn!)} to ${dateFormat.format(_checkOut!)}...'
-                          : 'Please select both check-in and check-out dates',
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (_checkIn == null || _checkOut == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please select both dates')),
+                        );
+                        return;
+                      }
+                      
+                      if (!_checkOut!.isAfter(_checkIn!)) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Check-out must be after check-in')),
+                        );
+                        return;
+                      }
+
+                      final success = await context.read<RoomProvider>()
+                          .fetchAvailableRooms(_checkIn!, _checkOut!);
+                      
+                      if (mounted && success) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Showing available rooms from '
+                              '${dateFormat.format(_checkIn!)} to '
+                              '${dateFormat.format(_checkOut!)}'
+                            ),
+                            backgroundColor: const Color(0xFF22C55E),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B5DF5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 0,
                     ),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.search, color: Colors.white, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Search Availability',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
-                    backgroundColor: const Color(0xFF1E1E3A),
                   ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B5DF5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
                 ),
-                elevation: 0,
               ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.search, color: Colors.white, size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    'Search Availability',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+              const SizedBox(width: 8),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _checkIn = null;
+                    _checkOut = null;
+                  });
+                  context.read<RoomProvider>().fetchAllRooms();
+                },
+                child: const Text('Clear'),
               ),
-            ),
+            ],
           ),
         ],
       ),

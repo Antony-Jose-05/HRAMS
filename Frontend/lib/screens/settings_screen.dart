@@ -40,7 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             builder: (context, authProvider, _) {
               final username = authProvider.admin?.username ?? 'Admin';
               final avatarLetter = username.isNotEmpty ? username[0].toUpperCase() : 'A';
-              final adminId = authProvider.admin?.id?.toString() ?? '-';
+              final adminId = authProvider.admin?.id.toString() ?? '-';
 
               return GlassCard(
                 padding: const EdgeInsets.all(20),

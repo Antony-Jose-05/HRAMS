@@ -26,6 +26,18 @@ class ApiClient {
     await _prefs.remove('auth_token');
   }
 
+  Future<String?> getAdminData() async {
+    return _prefs.getString('admin_data');
+  }
+
+  Future<void> setAdminData(String adminJson) async {
+    await _prefs.setString('admin_data', adminJson);
+  }
+
+  Future<void> clearAdminData() async {
+    await _prefs.remove('admin_data');
+  }
+
   /// Get HTTP headers (without auth token)
   Map<String, String> _getHeaders() {
     final headers = <String, String>{
