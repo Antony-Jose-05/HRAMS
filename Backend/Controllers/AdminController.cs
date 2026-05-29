@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace HotelBackend.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/auth")]
 public class AdminController : ControllerBase
 {
     private readonly AuthService _authService;
@@ -20,6 +20,7 @@ public class AdminController : ControllerBase
     /// Admin Login - Returns JWT token
     /// </summary>
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<ActionResult<LoginResponseDTO>> Login([FromBody] LoginRequestDTO request)
     {
         if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
@@ -37,6 +38,7 @@ public class AdminController : ControllerBase
     /// Admin Registration - Returns JWT token
     /// </summary>
     [HttpPost("register")]
+    [AllowAnonymous]
     public async Task<ActionResult<LoginResponseDTO>> Register([FromBody] LoginRequestDTO request)
     {
         if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))

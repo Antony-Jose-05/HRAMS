@@ -54,7 +54,6 @@ public class BookingsController : ControllerBase
     /// Create a new booking
     /// </summary>
     [HttpPost]
-    [AllowAnonymous]
     public async Task<ActionResult<BookingDTO>> CreateBooking([FromBody] CreateBookingDTO dto)
     {
         if (string.IsNullOrWhiteSpace(dto.GuestName) || string.IsNullOrWhiteSpace(dto.Phone))

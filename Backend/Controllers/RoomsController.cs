@@ -21,7 +21,6 @@ public class RoomsController : ControllerBase
     /// Get all rooms
     /// </summary>
     [HttpGet]
-    [AllowAnonymous]
     public async Task<ActionResult<List<RoomDTO>>> GetAllRooms()
     {
         var rooms = await _roomService.GetAllRoomsAsync();
@@ -32,7 +31,6 @@ public class RoomsController : ControllerBase
     /// Get room by ID
     /// </summary>
     [HttpGet("{id}")]
-    [AllowAnonymous]
     public async Task<ActionResult<RoomDTO>> GetRoomById(int id)
     {
         var room = await _roomService.GetRoomByIdAsync(id);
@@ -45,14 +43,13 @@ public class RoomsController : ControllerBase
     /// <summary>
     /// Get available rooms for date range
     /// </summary>
-    [HttpGet("available")]
-    [AllowAnonymous]
-    public async Task<ActionResult<List<RoomDTO>>> GetAvailableRooms([FromQuery] DateTime checkInDate, [FromQuery] DateTime checkOutDate)
+    [HttpGet("availability")]
+    public async Task<ActionResult<List<RoomDTO>>> GetAvailableRooms([FromQuery] DateTime checkIn, [FromQuery] DateTime checkOut)
     {
-        if (checkInDate >= checkOutDate)
+        if (checkIn >= checkOut)
             return BadRequest(new ErrorResponseDTO { Message = "Check-out date must be after check-in date", Code = "INVALID_DATES" });
 
-        var rooms = await _roomService.GetAvailableRoomsAsync(checkInDate, checkOutDate);
+        var rooms = await _roomService.GetAvailableRoomsAsync(checkIn, checkOut);
         return Ok(rooms);
     }
 
