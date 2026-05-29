@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'dart:ui' as ui;
 import '../models/room.dart';
 import '../providers/booking_provider.dart';
+import '../providers/room_provider.dart';
 import '../widgets/glass_card.dart';
 
 class BookingFormSheet extends StatefulWidget {
@@ -136,6 +137,9 @@ class _BookingFormSheetState extends State<BookingFormSheet> {
     if (!mounted) return;
 
     if (success) {
+      // Refresh rooms so the grid immediately reflects the "Reserved" status
+      context.read<RoomProvider>().fetchAllRooms();
+
       final scaffoldMessenger = ScaffoldMessenger.of(context);
       final navigator = Navigator.of(context);
       

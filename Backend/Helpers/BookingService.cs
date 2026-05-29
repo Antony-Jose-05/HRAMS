@@ -99,6 +99,10 @@ public class BookingService
         };
 
         _context.Bookings.Add(booking);
+        
+        // Sync room status
+        room.Status = "Reserved";
+        
         await _context.SaveChangesAsync();
 
         // Reload booking with room data
@@ -155,7 +159,20 @@ public class BookingService
         if (dto.CheckOutDate.HasValue)
             booking.CheckOutDate = dto.CheckOutDate.Value;
         if (!string.IsNullOrEmpty(dto.Status))
+        {
             booking.Status = dto.Status; // e.g., "CheckedIn", "CheckedOut"
+            
+            // Sync room status
+            if (booking.Room != null)
+            {
+                if (dto.Status == "CheckedIn")
+                    booking.Room.Status = "Occupied";
+                else if (dto.Status == "CheckedOut")
+                    booking.Room.Status = "Available";
+                else if (dto.Status == "Reserved")
+                    booking.Room.Status = "Reserved";
+            }
+        }
 
         await _context.SaveChangesAsync();
         return (true, "Booking updated successfully", MapToDTO(booking));
@@ -171,6 +188,14 @@ public class BookingService
             return (false, "Booking not found");
 
         _context.Bookings.Remove(booking);
+        
+        // Reset room status
+        var room = await _context.Rooms.FindAsync(booking.RoomId);
+        if (room != null)
+        {
+            room.Status = "Available";
+        }
+
         await _context.SaveChangesAsync();
         return (true, "Booking deleted successfully");
     }
