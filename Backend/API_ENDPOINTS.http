@@ -1,0 +1,122 @@
+@baseUrl = http://localhost:5225/api
+@adminUsername = admin
+@adminPassword = password123
+
+### ============================================
+### ADMIN ENDPOINTS
+### ============================================
+
+### Register Admin (Create initial admin account)
+POST {{baseUrl}}/admin/register
+Content-Type: application/json
+
+{
+  "username": "{{adminUsername}}",
+  "password": "{{adminPassword}}"
+}
+
+### Login Admin (Get JWT Token)
+POST {{baseUrl}}/admin/login
+Content-Type: application/json
+
+{
+  "username": "{{adminUsername}}",
+  "password": "{{adminPassword}}"
+}
+
+### ============================================
+### ROOM ENDPOINTS
+### ============================================
+
+### Get All Rooms (No Auth Required)
+GET {{baseUrl}}/rooms
+Accept: application/json
+
+### Get Room by ID (No Auth Required)
+GET {{baseUrl}}/rooms/1
+Accept: application/json
+
+### Get Available Rooms for Date Range (No Auth Required)
+GET {{baseUrl}}/rooms/available?checkInDate=2026-06-01&checkOutDate=2026-06-05
+Accept: application/json
+
+### Create New Room (Admin only - requires token in Authorization header)
+POST {{baseUrl}}/rooms
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "roomNumber": "101",
+  "type": "Deluxe",
+  "price": 1200.00,
+  "floor": 1
+}
+
+### Update Room (Admin only)
+PUT {{baseUrl}}/rooms/1
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "type": "Suite",
+  "price": 1500.00,
+  "floor": 2
+}
+
+### Delete Room (Admin only)
+DELETE {{baseUrl}}/rooms/1
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### ============================================
+### BOOKING ENDPOINTS
+### ============================================
+
+### Get All Bookings (Admin only)
+GET {{baseUrl}}/bookings
+Accept: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### Get Booking by ID (Admin only)
+GET {{baseUrl}}/bookings/1
+Accept: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### Get Bookings for Specific Room (Admin only)
+GET {{baseUrl}}/bookings/room/1
+Accept: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### Create New Booking (No Auth Required)
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+
+{
+  "roomId": 1,
+  "guestName": "John Doe",
+  "phone": "9876543210",
+  "checkInDate": "2026-06-01T14:00:00",
+  "checkOutDate": "2026-06-05T11:00:00"
+}
+
+### Update Booking (Admin only)
+PUT {{baseUrl}}/bookings/1
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "guestName": "Jane Doe",
+  "phone": "9876543210",
+  "status": "CheckedIn"
+}
+
+### Cancel Booking (Admin only)
+DELETE {{baseUrl}}/bookings/1
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### ============================================
+### TESTING FLOW
+### ============================================
+
+### 1. First, register/login to get token
+### 2. Replace YOUR_JWT_TOKEN_HERE with the token from login response
+### 3. Then test protected endpoints (marked Admin only)
