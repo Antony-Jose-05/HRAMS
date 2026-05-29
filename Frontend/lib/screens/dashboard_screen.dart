@@ -9,6 +9,7 @@ import '../providers/booking_provider.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/room_card.dart';
+import '../widgets/booking_form_sheet.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -603,6 +604,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _buildDetailRow('Floor', '${room.floor}'),
                     _buildDetailRow(
                         'Price', '\$${room.pricePerNight.toInt()} / night'),
+                    const SizedBox(height: 24),
+                    if (room.status == RoomStatus.available)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // Close current sheet first
+                            Navigator.of(context).pop();
+                            // Show the booking form sheet
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (context) => BookingFormSheet(room: room),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF3B5DF5),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'Book Now',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
                     const SizedBox(height: 16),
                   ],
                 ),

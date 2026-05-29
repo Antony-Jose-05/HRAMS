@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import '../models/room.dart';
-import 'dart:math';
 
 class RoomCard extends StatelessWidget {
   final Room room;
@@ -14,18 +13,22 @@ class RoomCard extends StatelessWidget {
   });
 
   String get _roomImage {
-    // Generate a consistent random image for this room based on its number
-    final random = Random(room.number.hashCode);
-    final images = [
-      'https://images.unsplash.com/photo-1598928506311-c55dd1296659?q=80&w=500&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1522771731515-3e284b3e83ec?q=80&w=500&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1502672260266-1c1529392878?q=80&w=500&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=500&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=500&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=500&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=500&auto=format&fit=crop',
+    // Curated hotel room photo IDs from Unsplash CDN
+    const roomPhotos = [
+      'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=500&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=500&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=500&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=500&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=500&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=500&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=500&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1595576508898-0ad5c879a061?w=500&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=500&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=500&auto=format&fit=crop',
     ];
-    return images[random.nextInt(images.length)];
+    return roomPhotos[room.id % roomPhotos.length];
   }
 
   @override

@@ -36,61 +36,69 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // Profile card
-          GlassCard(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF3B5DF5), Color(0xFF7B6EF6)],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'A',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+          Consumer<AuthProvider>(
+            builder: (context, authProvider, _) {
+              final username = authProvider.admin?.username ?? 'Admin';
+              final avatarLetter = username.isNotEmpty ? username[0].toUpperCase() : 'A';
+              final adminId = authProvider.admin?.id?.toString() ?? '-';
+
+              return GlassCard(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF3B5DF5), Color(0xFF7B6EF6)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Admin User',
-                        style: TextStyle(
-                          color: Color(0xFF0F172A),
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                      child: Center(
+                        child: Text(
+                          avatarLetter,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        'admin@hotelapp.com',
-                        style: TextStyle(
-                          color: Color(0xFF475569),
-                          fontSize: 13,
-                        ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            username,
+                            style: const TextStyle(
+                              color: Color(0xFF0F172A),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'ID: $adminId',
+                            style: const TextStyle(
+                              color: Color(0xFF475569),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    const Icon(
+                      Icons.edit_outlined,
+                      color: Color(0xFF64748B),
+                      size: 20,
+                    ),
+                  ],
                 ),
-                  const Icon(
-                  Icons.edit_outlined,
-                  color: Color(0xFF64748B),
-                  size: 20,
-                ),
-              ],
-            ),
+              );
+            },
           ),
           const SizedBox(height: 24),
 

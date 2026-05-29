@@ -48,7 +48,9 @@ class BookingProvider extends ChangeNotifier {
   ) async {
     _isLoading = true;
     _error = null;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
 
     try {
       final (success, booking, message) = await _bookingService.createBooking(
