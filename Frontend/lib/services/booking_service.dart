@@ -79,6 +79,7 @@ class BookingService {
           'checkOutDate': checkOutDate.toIso8601String(),
         },
         fromJson: (json) => json as Map<String, dynamic>,
+        requiresAuth: true,
       );
 
       final booking = Booking.fromJson(response);

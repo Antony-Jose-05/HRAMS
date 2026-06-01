@@ -12,6 +12,7 @@ class RoomService {
       final response = await _apiClient.get<List>(
         '/rooms',
         fromJson: (json) => json as List,
+        requiresAuth: true,
       );
 
       final List<Room> rooms = response
@@ -29,6 +30,7 @@ class RoomService {
       final response = await _apiClient.get<Map<String, dynamic>>(
         '/rooms/$id',
         fromJson: (json) => json as Map<String, dynamic>,
+        requiresAuth: true,
       );
 
       final room = Room.fromJson(response);
@@ -48,8 +50,9 @@ class RoomService {
       final checkOutStr = checkOutDate.toIso8601String();
 
       final response = await _apiClient.get<List>(
-        '/rooms/available?checkInDate=$checkInStr&checkOutDate=$checkOutStr',
+        '/rooms/availability?checkIn=$checkInStr&checkOut=$checkOutStr',
         fromJson: (json) => json as List,
+        requiresAuth: true,
       );
 
       final List<Room> rooms = response

@@ -7,6 +7,7 @@ namespace HotelBackend.Controllers;
 
 [ApiController]
 [Route("api/auth")]
+[Route("api/admin")] // Added for backward compatibility with frontend
 public class AdminController : ControllerBase
 {
     private readonly AuthService _authService;
