@@ -143,7 +143,8 @@ class _BookingFormSheetState extends State<BookingFormSheet> {
     if (!mounted) return;
 
     if (success) {
-      roomProvider.fetchAllRooms();
+      await roomProvider.fetchAllRooms();
+      await bookingProvider.fetchAllBookings();
       navigator.pop();
       
       messenger.showSnackBar(

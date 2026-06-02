@@ -118,10 +118,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 _buildAppBar(),
                 const SizedBox(height: 24),
 
-                // --- WELCOME CARD ---
-                _buildWelcomeCard(),
-                const SizedBox(height: 24),
-
                 // --- STATISTICS GRID ---
                 _buildSectionTitle('Overview'),
                 const SizedBox(height: 12),
@@ -244,96 +240,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // --- WELCOME CARD ---
-  Widget _buildWelcomeCard() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Discover\nYour New House',
-          style: TextStyle(
-            color: Color(0xFF0F172A),
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            height: 1.2,
-          ),
-        ),
-        const SizedBox(height: 24),
-        // Search Bar
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF1F5F9), // Light gray
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.search, color: Color(0xFF64748B), size: 24),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search Place...',
-                    hintStyle: TextStyle(
-                      color: Color(0xFF94A3B8),
-                      fontSize: 15,
-                    ),
-                    border: InputBorder.none,
-                    isDense: true,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child:
-                    const Icon(Icons.tune, color: Color(0xFF0F172A), size: 18),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-        // Filter Chips
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          child: Row(
-            children: [
-              _buildFilterChip('Rental House', true),
-              const SizedBox(width: 10),
-              _buildFilterChip('Apartment', false),
-              const SizedBox(width: 10),
-              _buildFilterChip('Houses', false),
-              const SizedBox(width: 10),
-              _buildFilterChip('Rooms', false),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFilterChip(String label, bool isSelected) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFF1E1E1E) : const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isSelected ? Colors.white : const Color(0xFF64748B),
-          fontSize: 14,
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-        ),
-      ),
-    );
-  }
-
   // --- SECTION TITLE ---
   Widget _buildSectionTitle(String title) {
     return Text(
@@ -443,14 +349,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         return;
                       }
 
-                      final success = await context.read<RoomProvider>()
+                      final roomProvider = context.read<RoomProvider>();
+                      final success = await roomProvider
                           .fetchAvailableRooms(_checkIn!, _checkOut!);
                       
                       if (mounted && success) {
+                        final count = roomProvider.rooms.length;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              'Showing available rooms from '
+                              '$count room${count == 1 ? '' : 's'} available from '
                               '${dateFormat.format(_checkIn!)} to '
                               '${dateFormat.format(_checkOut!)}'
                             ),

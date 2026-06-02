@@ -50,30 +50,50 @@ class _BookingsScreenState extends State<BookingsScreen> {
               ),
               const SizedBox(height: 20),
               Expanded(
-                child: bookingProvider.isLoading
+                child: RefreshIndicator(
+                  color: const Color(0xFF3B5DF5),
+                  onRefresh: () => context.read<BookingProvider>().fetchAllBookings(),
+                  child: bookingProvider.isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : bookingProvider.error != null
-                        ? Center(
-                            child: Text(
-                              bookingProvider.error!,
-                              style: const TextStyle(color: Color(0xFF475569)),
-                            ),
+                        ? ListView(
+                            children: [
+                              SizedBox(
+                                height: 200,
+                                child: Center(
+                                  child: Text(
+                                    bookingProvider.error!,
+                                    style: const TextStyle(color: Color(0xFF475569)),
+                                  ),
+                                ),
+                              ),
+                            ],
                           )
                         : bookingProvider.bookings.isEmpty
-                            ? const Center(
-                                child: Text(
-                                  'No bookings found',
-                                  style: TextStyle(color: Color(0xFF475569)),
-                                ),
+                            ? ListView(
+                                children: const [
+                                  SizedBox(
+                                    height: 200,
+                                    child: Center(
+                                      child: Text(
+                                        'No bookings found',
+                                        style: TextStyle(color: Color(0xFF475569)),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               )
                             : ListView.separated(
-                                physics: const BouncingScrollPhysics(),
+                                physics: const AlwaysScrollableScrollPhysics(
+                                  parent: BouncingScrollPhysics(),
+                                ),
                                 itemCount: bookingProvider.bookings.length,
                                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                                 itemBuilder: (context, index) {
                                   return _buildBookingCard(bookingProvider.bookings[index]);
                                 },
                               ),
+                ),
               ),
             ],
           ),

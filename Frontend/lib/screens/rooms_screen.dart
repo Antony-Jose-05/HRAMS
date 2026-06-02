@@ -78,24 +78,43 @@ class _RoomsScreenState extends State<RoomsScreen> {
 
               // Room grid
               Expanded(
-                child: roomProvider.isLoading
+                child: RefreshIndicator(
+                  color: const Color(0xFF3B5DF5),
+                  onRefresh: () => context.read<RoomProvider>().fetchAllRooms(),
+                  child: roomProvider.isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : roomProvider.error != null
-                        ? Center(
-                            child: Text(
-                              roomProvider.error!,
-                              style: const TextStyle(color: Color(0xFF475569)),
-                            ),
+                        ? ListView(
+                            children: [
+                              SizedBox(
+                                height: 200,
+                                child: Center(
+                                  child: Text(
+                                    roomProvider.error!,
+                                    style: const TextStyle(color: Color(0xFF475569)),
+                                  ),
+                                ),
+                              ),
+                            ],
                           )
                         : filteredRooms.isEmpty
-                            ? const Center(
-                                child: Text(
-                                  'No rooms found',
-                                  style: TextStyle(color: Color(0xFF475569)),
-                                ),
+                            ? ListView(
+                                children: const [
+                                  SizedBox(
+                                    height: 200,
+                                    child: Center(
+                                      child: Text(
+                                        'No rooms found',
+                                        style: TextStyle(color: Color(0xFF475569)),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               )
                             : GridView.builder(
-                                physics: const BouncingScrollPhysics(),
+                                physics: const AlwaysScrollableScrollPhysics(
+                                  parent: BouncingScrollPhysics(),
+                                ),
                                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: 2,
                                   mainAxisSpacing: 12,
@@ -110,6 +129,7 @@ class _RoomsScreenState extends State<RoomsScreen> {
                                   );
                                 },
                               ),
+                ),
               ),
             ],
           ),

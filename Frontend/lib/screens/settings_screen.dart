@@ -90,11 +90,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ],
                       ),
                     ),
-                    const Icon(
-                      Icons.edit_outlined,
-                      color: Color(0xFF64748B),
-                      size: 20,
-                    ),
                   ],
                 ),
               );
@@ -119,36 +114,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: 'Enable push notifications',
             value: _notifications,
             onChanged: (val) => setState(() => _notifications = val),
-          ),
-          const SizedBox(height: 24),
-
-          // General section
-          const Text(
-            'GENERAL',
-            style: TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildNavTile(
-            icon: Icons.info_outline,
-            title: 'About',
-            subtitle: 'App version 1.0.0',
-          ),
-          const SizedBox(height: 10),
-          _buildNavTile(
-            icon: Icons.help_outline,
-            title: 'Help & Support',
-            subtitle: 'Get assistance',
-          ),
-          const SizedBox(height: 10),
-          _buildNavTile(
-            icon: Icons.privacy_tip_outlined,
-            title: 'Privacy Policy',
-            subtitle: 'Read our policy',
           ),
           const SizedBox(height: 24),
 
@@ -240,54 +205,5 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildNavTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return GlassCard(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: const Color(0xFF475569), size: 20),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Color(0xFF0F172A),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: Color(0xFF475569),
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Icon(
-            Icons.chevron_right,
-            color: Color(0xFF94A3B8),
-            size: 22,
-          ),
-        ],
-      ),
-    );
-  }
+
 }
