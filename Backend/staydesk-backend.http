@@ -1,0 +1,21 @@
+@staydesk_HostAddress = http://localhost:5225
+@staydesk_ApiAddress = {{staydesk_HostAddress}}/api
+@authToken = REPLACE_WITH_VALID_JWT
+
+### Health Check
+GET {{staydesk_HostAddress}}/health
+Accept: application/json
+
+### Login
+POST {{staydesk_ApiAddress}}/admin/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+### Rooms
+GET {{staydesk_ApiAddress}}/rooms
+Accept: application/json
+Authorization: Bearer {{authToken}}

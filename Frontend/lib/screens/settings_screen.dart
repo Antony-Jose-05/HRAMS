@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../app_config.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/glass_card.dart';
 
@@ -114,6 +115,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: 'Enable push notifications',
             value: _notifications,
             onChanged: (val) => setState(() => _notifications = val),
+          ),
+          const SizedBox(height: 24),
+
+          const Text(
+            'APP',
+            style: TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GlassCard(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  AppConfig.appName,
+                  style: TextStyle(
+                    color: Color(0xFF0F172A),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Current API base URL',
+                  style: TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  AppConfig.apiBaseUrl,
+                  style: const TextStyle(
+                    color: Color(0xFF475569),
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 24),
 

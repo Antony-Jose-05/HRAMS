@@ -4,6 +4,7 @@ import 'package:animations/animations.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/room.dart';
+import '../providers/auth_provider.dart';
 import '../providers/room_provider.dart';
 import '../providers/booking_provider.dart';
 import '../widgets/glass_card.dart';
@@ -96,6 +97,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
+    final adminName = context.select<AuthProvider, String>(
+      (authProvider) => authProvider.admin?.username ?? 'Admin',
+    );
 
     return Consumer2<RoomProvider, BookingProvider>(
       builder: (context, roomProvider, bookingProvider, _) {
@@ -115,7 +119,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // --- APP BAR ---
-                _buildAppBar(),
+                _buildAppBar(adminName),
                 const SizedBox(height: 24),
 
                 // --- STATISTICS GRID ---
@@ -143,23 +147,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   // --- APP BAR ---
-  Widget _buildAppBar() {
+  Widget _buildAppBar(String adminName) {
+    final avatarLetter = adminName.isNotEmpty ? adminName[0].toUpperCase() : 'A';
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Location Pill
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E1E1E), // Dark background like image
+            color: const Color(0xFF1E1E1E),
             borderRadius: BorderRadius.circular(24),
           ),
           child: const Row(
             children: [
-              Icon(Icons.location_on_outlined, color: Colors.white, size: 18),
+              Icon(Icons.apartment_rounded, color: Colors.white, size: 18),
               SizedBox(width: 6),
               Text(
-                'Kochi, Kerala',
+                'Staydesk',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12,
@@ -171,46 +176,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         Row(
           children: [
-            // Notification bell
-            Stack(
-              children: [
-                _buildIconButton(Icons.notifications_outlined),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3B5DF5),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            _buildIconButton(Icons.insights_outlined),
             const SizedBox(width: 12),
-            // Profile avatar
             Container(
-              width: 44,
-              height: 44,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: const DecorationImage(
-                  image: NetworkImage(
-                      'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop'),
-                  fit: BoxFit.cover,
-                ),
-                border: Border.all(
-                  color: Colors.white,
-                  width: 2,
-                ),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF3B5DF5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        avatarLetter,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    adminName,
+                    style: const TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),

@@ -4,6 +4,7 @@ using HotelBackend.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace HotelBackend.Helpers;
@@ -26,31 +27,40 @@ public class AuthService
     /// <summary>
     /// Authenticate admin with username and password
     /// </summary>
-    public Task<LoginResponseDTO> LoginAsync(LoginRequestDTO request)
+    public async Task<LoginResponseDTO> LoginAsync(LoginRequestDTO request)
     {
+        var username = request.Username.Trim();
+        var password = request.Password.Trim();
+
         // Find admin by username in database
-        var admin = _context.Admins.FirstOrDefault(a => a.Username == request.Username);
+        var admin = await _context.Admins.FirstOrDefaultAsync(a => a.Username == username);
 
         // Check if admin exists AND password matches
-        if (admin == null || admin.PasswordHash != request.Password)
+        if (admin == null || !VerifyPassword(password, admin.PasswordHash))
         {
-            return Task.FromResult(new LoginResponseDTO
+            return new LoginResponseDTO
             {
                 Success = false,
                 Message = "Invalid username or password"
-            });
+            };
+        }
+
+        if (NeedsPasswordUpgrade(admin.PasswordHash))
+        {
+            admin.PasswordHash = HashPassword(password);
+            await _context.SaveChangesAsync();
         }
 
         // Generate JWT token if login successful
         var token = GenerateJwtToken(admin);
 
-        return Task.FromResult(new LoginResponseDTO
+        return new LoginResponseDTO
         {
             Success = true,
             Message = "Login successful",
             Token = token,
             Admin = new AdminDTO { Id = admin.Id, Username = admin.Username }
-        });
+        };
     }
 
     /// <summary>
@@ -58,8 +68,10 @@ public class AuthService
     /// </summary>
     public async Task<LoginResponseDTO> RegisterAsync(LoginRequestDTO request)
     {
+        var username = request.Username.Trim();
+
         // Check if username already exists
-        if (_context.Admins.Any(a => a.Username == request.Username))
+        if (await _context.Admins.AnyAsync(a => a.Username == username))
         {
             return new LoginResponseDTO
             {
@@ -68,11 +80,11 @@ public class AuthService
             };
         }
 
-        // Create new admin with plain text password
+        // Create new admin with a hashed password
         var admin = new Admin
         {
-            Username = request.Username,
-            PasswordHash = request.Password
+            Username = username,
+            PasswordHash = HashPassword(request.Password)
         };
 
         // Save to database
@@ -98,9 +110,9 @@ public class AuthService
     private string GenerateJwtToken(Admin admin)
     {
         // Get JWT settings from configuration
-        var jwtSecret = _configuration["Jwt:Secret"] ?? "your-super-secret-key-that-is-at-least-32-characters-long-for-HS256";
-        var jwtIssuer = _configuration["Jwt:Issuer"] ?? "HotelBackendAPI";
-        var jwtAudience = _configuration["Jwt:Audience"] ?? "HotelApp";
+        var jwtSecret = _configuration["Jwt:Secret"] ?? "staydesk-dev-secret-key-change-before-production";
+        var jwtIssuer = _configuration["Jwt:Issuer"] ?? "StaydeskBackendAPI";
+        var jwtAudience = _configuration["Jwt:Audience"] ?? "StaydeskAdminApp";
         var jwtExpiryMinutes = int.Parse(_configuration["Jwt:ExpiryMinutes"] ?? "60");
 
         // Create encryption key from secret
@@ -113,7 +125,7 @@ public class AuthService
         {
             new Claim(ClaimTypes.NameIdentifier, admin.Id.ToString()), // Admin ID
             new Claim(ClaimTypes.Name, admin.Username), // Admin username
-            new Claim("role", "admin") // Admin role
+            new Claim(ClaimTypes.Role, "admin") // Admin role
         };
 
         // Create token with expiration
@@ -127,5 +139,32 @@ public class AuthService
 
         // Convert token to string format to send to client
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    private static bool VerifyPassword(string password, string storedPasswordHash)
+    {
+        if (string.IsNullOrWhiteSpace(storedPasswordHash))
+        {
+            return false;
+        }
+
+        return IsBcryptHash(storedPasswordHash)
+            ? BCrypt.Net.BCrypt.Verify(password, storedPasswordHash)
+            : storedPasswordHash == password;
+    }
+
+    private static bool NeedsPasswordUpgrade(string storedPasswordHash)
+    {
+        return !IsBcryptHash(storedPasswordHash);
+    }
+
+    private static bool IsBcryptHash(string value)
+    {
+        return value.StartsWith("$2", StringComparison.Ordinal);
+    }
+
+    private static string HashPassword(string password)
+    {
+        return BCrypt.Net.BCrypt.HashPassword(password);
     }
 }

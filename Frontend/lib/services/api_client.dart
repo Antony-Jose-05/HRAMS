@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import '../app_config.dart';
 
 class ApiClient {
-  static const String baseUrl = 'http://localhost:5225/api';
+  static String get baseUrl => AppConfig.apiBaseUrl;
   
   final http.Client _httpClient;
   final SharedPreferences _prefs;
@@ -36,6 +38,11 @@ class ApiClient {
 
   Future<void> clearAdminData() async {
     await _prefs.remove('admin_data');
+  }
+
+  Future<void> clearSession() async {
+    await clearToken();
+    await clearAdminData();
   }
 
   /// Get HTTP headers (without auth token)
@@ -140,7 +147,7 @@ class ApiClient {
       );
 
       if (response.statusCode == 401) {
-        await clearToken();
+        await clearSession();
         throw UnauthorizedException('Session expired. Please login again.');
       }
 
@@ -155,7 +162,7 @@ class ApiClient {
 
   T _handleResponse<T>(http.Response response, T Function(dynamic) fromJson) {
     if (response.statusCode == 401) {
-      clearToken();
+      unawaited(clearSession());
       throw UnauthorizedException('Unauthorized. Please login again.');
     }
 

@@ -1,18 +1,24 @@
-# Neon Flap
+# staydesk frontend
 
-A colorful Flappy Bird-style Flutter game with a home screen, hangar page,
-how-to-play page, playful arcade visuals, collectible rings, tap-to-flap
-controls, score tracking, best score tracking, moving obstacles, and restart
-flow.
+Flutter admin client for the `staydesk` booking dashboard.
 
 ## Run
 
-```powershell
-C:\flutter\bin\flutter.bat run
+```bash
+flutter pub get
+flutter run
 ```
 
-## Test
+## Configure API Base URL
 
-```powershell
-C:\flutter\bin\flutter.bat test
+```bash
+flutter run --dart-define=STAYDESK_API_BASE_URL=http://localhost:5225/api
 ```
+
+If no override is supplied, the app uses `http://localhost:5225/api`.
+
+## Notes
+
+- Authentication state is stored locally with `shared_preferences`
+- The UI is built with `provider`
+- Platform metadata has been renamed from Flutter defaults, but the generated platform scaffolding remains structurally standard

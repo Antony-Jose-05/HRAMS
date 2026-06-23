@@ -5,6 +5,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>hotel_backend</RootNamespace>
+    <Title>staydesk backend</Title>
+    <Product>staydesk</Product>
+    <Description>ASP.NET Core API for the staydesk admin dashboard.</Description>
   </PropertyGroup>
 
   <ItemGroup>

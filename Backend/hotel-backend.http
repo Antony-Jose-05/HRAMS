@@ -1,6 +1,0 @@
-@hotel_backend_HostAddress = http://localhost:5225
-
-GET {{hotel_backend_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

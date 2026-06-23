@@ -12,9 +12,10 @@ using System.Reflection;
 
 [assembly: System.Reflection.AssemblyCompanyAttribute("hotel-backend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyDescriptionAttribute("ASP.NET Core API for the staydesk admin dashboard.")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+48bea95868baf179e794aa108dc0305a5e2b583b")]
-[assembly: System.Reflection.AssemblyProductAttribute("hotel-backend")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+22aa4b560d2745ded958cd787254dfa3b6f5e1ce")]
+[assembly: System.Reflection.AssemblyProductAttribute("staydesk")]
 [assembly: System.Reflection.AssemblyTitleAttribute("hotel-backend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 

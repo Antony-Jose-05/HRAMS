@@ -2,12 +2,13 @@ using HotelBackend.Data;
 using HotelBackend.Helpers;
 using HotelBackend.Models;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
 // ============================================
 // DATABASE CONFIGURATION
@@ -30,9 +31,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // ============================================
 // JWT (JSON Web Token) is used for secure admin authentication
 // Read JWT settings from appsettings.json
-var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "your-super-secret-key-that-is-at-least-32-characters-long-for-HS256";
-var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "HotelBackendAPI";
-var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "HotelApp";
+var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "staydesk-dev-secret-key-change-before-production";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "StaydeskBackendAPI";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "StaydeskAdminApp";
 
 // Configure JWT Bearer authentication
 // This validates tokens sent by the Flutter app in the Authorization header
@@ -82,24 +83,31 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer(); // For Swagger API Explorer
 builder.Services.AddSwaggerGen(c =>
 {
-    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "staydesk API",
+        Version = "v1",
+        Description = "Admin API for room inventory, bookings, and dashboard statistics."
+    });
+
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Type = SecuritySchemeType.Http,
         Scheme = "Bearer",
         BearerFormat = "JWT",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        In = ParameterLocation.Header,
         Description = "JWT Authorization header using the Bearer scheme."
     });
     
-    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            new OpenApiSecurityScheme
             {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                Reference = new OpenApiReference
                 {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 }
             },
@@ -133,6 +141,7 @@ app.UseAuthorization();
 
 // Map all controller routes
 app.MapControllers();
+app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "staydesk-api" }));
 
 // ============================================
 // DATABASE SEEDING
@@ -141,18 +150,24 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    
-    // Only seed if tables are empty
-    if (!context.Admins.Any())
+
+    await context.Database.MigrateAsync();
+
+    var seeded = false;
+
+    if (!await context.Admins.AnyAsync())
     {
-        // Add sample admin accounts
         context.Admins.AddRange(
-            new Admin { Username = "admin", PasswordHash = "admin123" },
-            new Admin { Username = "demo", PasswordHash = "demo123" },
-            new Admin { Username = "manager", PasswordHash = "pass123" }
+            new Admin { Username = "admin", PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123") },
+            new Admin { Username = "demo", PasswordHash = BCrypt.Net.BCrypt.HashPassword("demo123") },
+            new Admin { Username = "manager", PasswordHash = BCrypt.Net.BCrypt.HashPassword("pass123") }
         );
 
-        // Add sample rooms
+        seeded = true;
+    }
+
+    if (!await context.Rooms.AnyAsync())
+    {
         context.Rooms.AddRange(
             new Room { RoomNumber = "101", Type = "Single", Price = 50, Floor = 1, Status = "Available" },
             new Room { RoomNumber = "102", Type = "Double", Price = 75, Floor = 1, Status = "Available" },
@@ -162,9 +177,13 @@ using (var scope = app.Services.CreateScope())
             new Room { RoomNumber = "203", Type = "Double", Price = 75, Floor = 2, Status = "Available" }
         );
 
-        // Save all data
-        context.SaveChanges();
-        Console.WriteLine("✓ Database seeded with sample data!");
+        seeded = true;
+    }
+
+    if (seeded)
+    {
+        await context.SaveChangesAsync();
+        Console.WriteLine("Staydesk database seeded with sample data.");
     }
 }
 

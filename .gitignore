@@ -1,0 +1,33 @@
+# macOS
+.DS_Store
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# .NET
+Backend/bin/
+Backend/obj/
+*.user
+*.suo
+
+# Local backend overrides
+Backend/appsettings.Local.json
+
+# Flutter / Dart
+Frontend/.dart_tool/
+Frontend/.flutter-plugins-dependencies
+Frontend/.pub/
+Frontend/build/
+Frontend/coverage/
+
+# Platform build output
+Frontend/android/app/debug/
+Frontend/android/app/profile/
+Frontend/android/app/release/
+Frontend/ios/Flutter/.last_build_id

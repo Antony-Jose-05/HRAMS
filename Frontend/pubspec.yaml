@@ -1,5 +1,5 @@
-name: app1
-description: "A beautiful Flutter task management app."
+name: staydesk
+description: "Flutter admin dashboard for staydesk room and booking management."
 publish_to: 'none'
 version: 1.0.0+1
 

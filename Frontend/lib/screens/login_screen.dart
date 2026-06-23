@@ -65,13 +65,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     // Logo/Title
                     const Icon(
-                      Icons.hotel,
+                      Icons.apartment_rounded,
                       size: 64,
                       color: Colors.white,
                     ),
                     const SizedBox(height: 24),
                     const Text(
-                      'Hotel Management',
+                      'Staydesk',
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -80,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Admin Dashboard',
+                      'Admin Booking Dashboard',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white70,
@@ -247,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 24),
                     const Text(
-                      'Demo Credentials:',
+                      'Sample Credentials:',
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 12,

@@ -1,13 +1,19 @@
-@baseUrl = http://localhost:5225/api
+@baseUrl = http://localhost:5225
+@apiBaseUrl = {{baseUrl}}/api
 @adminUsername = admin
-@adminPassword = password123
+@adminPassword = admin123
+@authToken = REPLACE_WITH_VALID_JWT
 
 ### ============================================
-### ADMIN ENDPOINTS
+### STAYDESK API
 ### ============================================
+
+### Health Check
+GET {{baseUrl}}/health
+Accept: application/json
 
 ### Register Admin (Create initial admin account)
-POST {{baseUrl}}/admin/register
+POST {{apiBaseUrl}}/admin/register
 Content-Type: application/json
 
 {
@@ -16,7 +22,7 @@ Content-Type: application/json
 }
 
 ### Login Admin (Get JWT Token)
-POST {{baseUrl}}/admin/login
+POST {{apiBaseUrl}}/admin/login
 Content-Type: application/json
 
 {
@@ -28,34 +34,37 @@ Content-Type: application/json
 ### ROOM ENDPOINTS
 ### ============================================
 
-### Get All Rooms (No Auth Required)
-GET {{baseUrl}}/rooms
+### Get All Rooms (Requires JWT auth)
+GET {{apiBaseUrl}}/rooms
 Accept: application/json
+Authorization: Bearer {{authToken}}
 
-### Get Room by ID (No Auth Required)
-GET {{baseUrl}}/rooms/1
+### Get Room by ID (Requires JWT auth)
+GET {{apiBaseUrl}}/rooms/1
 Accept: application/json
+Authorization: Bearer {{authToken}}
 
-### Get Available Rooms for Date Range (No Auth Required)
-GET {{baseUrl}}/rooms/available?checkInDate=2026-06-01&checkOutDate=2026-06-05
+### Get Available Rooms for Date Range (Requires JWT auth)
+GET {{apiBaseUrl}}/rooms/availability?checkIn=2026-06-01T14:00:00&checkOut=2026-06-05T11:00:00
 Accept: application/json
+Authorization: Bearer {{authToken}}
 
-### Create New Room (Admin only - requires token in Authorization header)
-POST {{baseUrl}}/rooms
+### Create New Room (Admin only)
+POST {{apiBaseUrl}}/rooms
 Content-Type: application/json
-Authorization: Bearer YOUR_JWT_TOKEN_HERE
+Authorization: Bearer {{authToken}}
 
 {
-  "roomNumber": "101",
+  "roomNumber": "301",
   "type": "Deluxe",
   "price": 1200.00,
-  "floor": 1
+  "floor": 3
 }
 
 ### Update Room (Admin only)
-PUT {{baseUrl}}/rooms/1
+PUT {{apiBaseUrl}}/rooms/1
 Content-Type: application/json
-Authorization: Bearer YOUR_JWT_TOKEN_HERE
+Authorization: Bearer {{authToken}}
 
 {
   "type": "Suite",
@@ -64,31 +73,32 @@ Authorization: Bearer YOUR_JWT_TOKEN_HERE
 }
 
 ### Delete Room (Admin only)
-DELETE {{baseUrl}}/rooms/1
-Authorization: Bearer YOUR_JWT_TOKEN_HERE
+DELETE {{apiBaseUrl}}/rooms/1
+Authorization: Bearer {{authToken}}
 
 ### ============================================
 ### BOOKING ENDPOINTS
 ### ============================================
 
 ### Get All Bookings (Admin only)
-GET {{baseUrl}}/bookings
+GET {{apiBaseUrl}}/bookings
 Accept: application/json
-Authorization: Bearer YOUR_JWT_TOKEN_HERE
+Authorization: Bearer {{authToken}}
 
 ### Get Booking by ID (Admin only)
-GET {{baseUrl}}/bookings/1
+GET {{apiBaseUrl}}/bookings/1
 Accept: application/json
-Authorization: Bearer YOUR_JWT_TOKEN_HERE
+Authorization: Bearer {{authToken}}
 
 ### Get Bookings for Specific Room (Admin only)
-GET {{baseUrl}}/bookings/room/1
+GET {{apiBaseUrl}}/bookings/room/1
 Accept: application/json
-Authorization: Bearer YOUR_JWT_TOKEN_HERE
+Authorization: Bearer {{authToken}}
 
-### Create New Booking (No Auth Required)
-POST {{baseUrl}}/bookings
+### Create New Booking (Requires JWT auth)
+POST {{apiBaseUrl}}/bookings
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
   "roomId": 1,
@@ -99,9 +109,9 @@ Content-Type: application/json
 }
 
 ### Update Booking (Admin only)
-PUT {{baseUrl}}/bookings/1
+PUT {{apiBaseUrl}}/bookings/1
 Content-Type: application/json
-Authorization: Bearer YOUR_JWT_TOKEN_HERE
+Authorization: Bearer {{authToken}}
 
 {
   "guestName": "Jane Doe",
@@ -110,13 +120,13 @@ Authorization: Bearer YOUR_JWT_TOKEN_HERE
 }
 
 ### Cancel Booking (Admin only)
-DELETE {{baseUrl}}/bookings/1
-Authorization: Bearer YOUR_JWT_TOKEN_HERE
+DELETE {{apiBaseUrl}}/bookings/1
+Authorization: Bearer {{authToken}}
 
 ### ============================================
 ### TESTING FLOW
 ### ============================================
 
-### 1. First, register/login to get token
-### 2. Replace YOUR_JWT_TOKEN_HERE with the token from login response
-### 3. Then test protected endpoints (marked Admin only)
+### 1. First, login to get a token
+### 2. Replace REPLACE_WITH_VALID_JWT with the JWT from login
+### 3. Then test protected endpoints with Authorization: Bearer {{authToken}}

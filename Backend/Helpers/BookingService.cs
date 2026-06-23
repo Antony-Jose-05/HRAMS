@@ -25,7 +25,11 @@ public class BookingService
     public async Task<List<BookingDTO>> GetAllBookingsAsync()
     {
         // Include() loads the related Room object with each booking
-        var bookings = await _context.Bookings.Include(b => b.Room).ToListAsync();
+        var bookings = await _context.Bookings
+            .Include(b => b.Room)
+            .OrderByDescending(b => b.CheckInDate)
+            .ThenBy(b => b.RoomId)
+            .ToListAsync();
         return bookings.Select(MapToDTO).ToList();
     }
 
@@ -49,6 +53,7 @@ public class BookingService
         var bookings = await _context.Bookings
             .Include(b => b.Room)
             .Where(b => b.RoomId == roomId)
+            .OrderByDescending(b => b.CheckInDate)
             .ToListAsync();
         return bookings.Select(MapToDTO).ToList();
     }
@@ -91,19 +96,16 @@ public class BookingService
         var booking = new Booking
         {
             RoomId = dto.RoomId,
-            GuestName = dto.GuestName,
-            Phone = dto.Phone,
+            GuestName = dto.GuestName.Trim(),
+            Phone = dto.Phone.Trim(),
             CheckInDate = dto.CheckInDate,
             CheckOutDate = dto.CheckOutDate,
             Status = "Reserved" // Initial status
         };
 
         _context.Bookings.Add(booking);
-        
-        // Sync room status
-        room.Status = "Reserved";
-        
         await _context.SaveChangesAsync();
+        await RefreshRoomStatusAsync(dto.RoomId);
 
         // Reload booking with room data
         await _context.Entry(booking).Reference(b => b.Room).LoadAsync();
@@ -151,30 +153,20 @@ public class BookingService
 
         // ===== Update fields that were provided =====
         if (!string.IsNullOrEmpty(dto.GuestName))
-            booking.GuestName = dto.GuestName;
+            booking.GuestName = dto.GuestName.Trim();
         if (!string.IsNullOrEmpty(dto.Phone))
-            booking.Phone = dto.Phone;
+            booking.Phone = dto.Phone.Trim();
         if (dto.CheckInDate.HasValue)
             booking.CheckInDate = dto.CheckInDate.Value;
         if (dto.CheckOutDate.HasValue)
             booking.CheckOutDate = dto.CheckOutDate.Value;
         if (!string.IsNullOrEmpty(dto.Status))
         {
-            booking.Status = dto.Status; // e.g., "CheckedIn", "CheckedOut"
-            
-            // Sync room status
-            if (booking.Room != null)
-            {
-                if (dto.Status == "CheckedIn")
-                    booking.Room.Status = "Occupied";
-                else if (dto.Status == "CheckedOut")
-                    booking.Room.Status = "Available";
-                else if (dto.Status == "Reserved")
-                    booking.Room.Status = "Reserved";
-            }
+            booking.Status = dto.Status.Trim(); // e.g., "CheckedIn", "CheckedOut"
         }
 
         await _context.SaveChangesAsync();
+        await RefreshRoomStatusAsync(booking.RoomId);
         return (true, "Booking updated successfully", MapToDTO(booking));
     }
 
@@ -187,17 +179,33 @@ public class BookingService
         if (booking == null)
             return (false, "Booking not found");
 
+        var roomId = booking.RoomId;
         _context.Bookings.Remove(booking);
-        
-        // Reset room status
-        var room = await _context.Rooms.FindAsync(booking.RoomId);
-        if (room != null)
+        await _context.SaveChangesAsync();
+        await RefreshRoomStatusAsync(roomId);
+        return (true, "Booking deleted successfully");
+    }
+
+    private async Task RefreshRoomStatusAsync(int roomId)
+    {
+        var room = await _context.Rooms.FindAsync(roomId);
+        if (room == null)
         {
-            room.Status = "Available";
+            return;
         }
 
+        var activeStatuses = await _context.Bookings
+            .Where(b => b.RoomId == roomId && b.Status != "CheckedOut")
+            .Select(b => b.Status)
+            .ToListAsync();
+
+        room.Status = activeStatuses.Any(status => status == "CheckedIn")
+            ? "Occupied"
+            : activeStatuses.Count > 0
+                ? "Reserved"
+                : "Available";
+
         await _context.SaveChangesAsync();
-        return (true, "Booking deleted successfully");
     }
 
     /// <summary>

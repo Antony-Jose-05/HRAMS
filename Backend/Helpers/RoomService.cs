@@ -23,7 +23,10 @@ public class RoomService
     /// </summary>
     public async Task<List<RoomDTO>> GetAllRoomsAsync()
     {
-        var rooms = await _context.Rooms.ToListAsync();
+        var rooms = await _context.Rooms
+            .OrderBy(r => r.Floor)
+            .ThenBy(r => r.RoomNumber)
+            .ToListAsync();
         return rooms.Select(MapToDTO).ToList();
     }
 
@@ -58,6 +61,8 @@ public class RoomService
         // Step 2: Get all rooms EXCEPT those with conflicts
         var availableRooms = await _context.Rooms
             .Where(r => !bookedRoomIds.Contains(r.Id))
+            .OrderBy(r => r.Floor)
+            .ThenBy(r => r.RoomNumber)
             .ToListAsync();
 
         return availableRooms.Select(MapToDTO).ToList();
@@ -68,17 +73,21 @@ public class RoomService
     /// </summary>
     public async Task<RoomDTO?> CreateRoomAsync(CreateRoomDTO dto)
     {
+        var roomNumber = dto.RoomNumber.Trim();
+        var roomType = dto.Type.Trim();
+
         // Check if room number already exists (must be unique)
-        if (await _context.Rooms.AnyAsync(r => r.RoomNumber == dto.RoomNumber))
+        if (await _context.Rooms.AnyAsync(r => r.RoomNumber == roomNumber))
             return null; // Return null if duplicate
 
         // Create new room object
         var room = new Room
         {
-            RoomNumber = dto.RoomNumber,
-            Type = dto.Type,
+            RoomNumber = roomNumber,
+            Type = roomType,
             Price = dto.Price,
-            Floor = dto.Floor
+            Floor = dto.Floor,
+            Status = "Available"
         };
 
         // Add to database and save
@@ -99,7 +108,7 @@ public class RoomService
 
         // Update only fields that were provided
         if (!string.IsNullOrEmpty(dto.Type))
-            room.Type = dto.Type;
+            room.Type = dto.Type.Trim();
         if (dto.Price.HasValue)
             room.Price = dto.Price.Value;
         if (dto.Floor.HasValue)
